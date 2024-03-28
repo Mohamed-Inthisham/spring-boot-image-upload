@@ -6,6 +6,11 @@ import com.example.imageuploadapi.model.Student;
 import com.example.imageuploadapi.repository.StudentRepository;
 import com.example.imageuploadapi.service.StudentService;
 import lombok.AllArgsConstructor;
+import org.springframework.core.io.FileSystemResource;
+import org.springframework.core.io.Resource;
+import org.springframework.http.HttpStatusCode;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -48,10 +53,11 @@ public class StudentServiceImpl implements StudentService {
 
     @Override
     public List<StudentResponse> getAll() {
-        List<Student> studentList=studentRepository.findAll();
-        List<StudentResponse> studentResponseList=new ArrayList<>();
-        for (Student student:studentList){
-            StudentResponse studentResponse=new StudentResponse();
+        List<Student> studentList = studentRepository.findAll();
+        List<StudentResponse> studentResponseList = new ArrayList<>();
+        for (Student student : studentList) {
+            StudentResponse studentResponse = new StudentResponse();
+            studentResponse.setId(student.getId());
             studentResponse.setName(student.getName());
             studentResponse.setAddress(student.getAddress());
             studentResponse.setDob(student.getDob());
@@ -63,15 +69,34 @@ public class StudentServiceImpl implements StudentService {
 
     @Override
     public StudentResponse getSpecific(Long id) {
-        Optional<Student> optionalStudent=studentRepository.findById(id);
-        StudentResponse studentResponse=new StudentResponse();
-        if(optionalStudent.isPresent()){
-            Student student=optionalStudent.get();
+        Optional<Student> optionalStudent = studentRepository.findById(id);
+        StudentResponse studentResponse = new StudentResponse();
+        if (optionalStudent.isPresent()) {
+            Student student = optionalStudent.get();
             studentResponse.setName(student.getName());
             studentResponse.setAddress(student.getAddress());
             studentResponse.setDob(student.getDob());
             studentResponse.setImage(student.getImage());
             return studentResponse;
+        }
+        return null;
+    }
+
+    @Override
+    public ResponseEntity<Resource> getImage(Long id) throws IOException {
+        Optional<Student> optionalStudent = studentRepository.findById(id);
+        StudentResponse studentResponse = new StudentResponse();
+        if (optionalStudent.isPresent()) {
+            Student student = optionalStudent.get();
+            studentResponse.setId(student.getId());
+            studentResponse.setName(student.getName());
+            studentResponse.setAddress(student.getAddress());
+            studentResponse.setDob(student.getDob());
+            Path imagePath = Paths.get(uploadDirectory, student.getImage());
+            Resource resource = new FileSystemResource(imagePath.toFile());
+            String contentType = Files.probeContentType(imagePath);
+
+            return ResponseEntity.ok().contentType(MediaType.parseMediaType(contentType)).body(resource);
         }
         return null;
     }

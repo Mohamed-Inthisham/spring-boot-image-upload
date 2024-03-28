@@ -2,6 +2,8 @@ package com.example.imageuploadapi.service;
 
 import com.example.imageuploadapi.controller.request.StudentRequest;
 import com.example.imageuploadapi.controller.response.StudentResponse;
+import org.springframework.core.io.Resource;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -15,4 +17,6 @@ public interface StudentService {
     List<StudentResponse> getAll();
 
     StudentResponse getSpecific(Long id);
+
+    ResponseEntity<Resource> getImage(Long id) throws IOException;
 }
